@@ -2,13 +2,14 @@
   "name": "flutter-cli-shortcut",
   "displayName": "Flutter CLI Shortcut",
   "description": "A collection of useful Flutter CLI commands for quick access.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "engines": {
     "vscode": "^1.94.0"
   },
   "categories": [
     "Programming Languages"
   ],
+  "icon": "media/flutter_cli_icon.png",
   "activationEvents": [
     "onLanguage:dart"
   ],
@@ -117,7 +118,7 @@
   "publisher": "NightingaleNath",
   "repository": {
     "type": "git",
-    "url": "https://github.com/NightingaleNath/flutter-cli-shortcut.git" 
+    "url": "https://github.com/NightingaleNath/flutter-cli-shortcut.git"
   },
   "bugs": {
     "url": "https://github.com/NightingaleNath/flutter-cli-shortcut/issues"
