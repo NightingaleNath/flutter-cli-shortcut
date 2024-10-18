@@ -2,7 +2,7 @@
   "name": "flutter-cli-shortcut",
   "displayName": "Flutter CLI Shortcut",
   "description": "A collection of useful Flutter CLI commands for quick access.",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "engines": {
     "vscode": "^1.94.0"
   },
