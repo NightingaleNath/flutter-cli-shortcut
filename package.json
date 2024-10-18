@@ -86,6 +86,10 @@
         "title": "Flux: Create CodeLytical Structure"
       },
       {
+        "command": "flutter-cli-shortcut.flutterCreateCodeLyticalRiverpod",
+        "title": "Flux: Create CodeLytical Riverpod"
+      },
+      {
         "command": "flutter-cli-shortcut.flutterBuildApk",
         "title": "Flux: Build APK"
       },

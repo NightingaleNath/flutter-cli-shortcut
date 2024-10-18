@@ -1,29 +1,36 @@
+![snippets in action](media/flutter_cli_shortcut.gif)
+
 # Flutter CLI Shortcut
 
 A collection of useful Flutter CLI commands for quick access.
 
 ## Features
 
-| Command                               | Description                                        |
-| ------------------------------------- | -------------------------------------------------- |
-| **Flutter: Run App**                  | Run your Flutter application.                      |
-| **Flutter: Pub Get**                  | Install the dependencies listed in `pubspec.yaml`. |
-| **Flutter: Pub Upgrade**              | Upgrade the packages listed in `pubspec.yaml`.     |
-| **Flutter: Clean Project**            | Remove build artifacts.                            |
-| **Flutter: Test**                     | Run tests for your Flutter application.            |
-| **Flutter: Analyze**                  | Analyze your code for potential issues.            |
-| **Flutter: Create Project**           | Create a new Flutter project.                      |
-| **Flutter: Run Release**              | Run your Flutter application in release mode.      |
-| **Flutter: Build APK**                | Build an Android APK.                              |
-| **Flutter: Build iOS**                | Build an iOS app.                                  |
-| **Flutter: Build App Bundle**         | Build an Android App Bundle.                       |
-| **iOS: Pod Install**                  | Install iOS dependencies using CocoaPods.          |
-| **iOS: Pod Install with Repo Update** | Install with repo update.                          |
-| **iOS: Pod Update**                   | Update iOS dependencies.                           |
-| **iOS: Pod Repo Update**              | Update CocoaPods repos.                            |
-| **Flutter: Pub Global Activate**      | Activate a global package.                         |
-| **Flutter: Change Channel**           | Change the Flutter SDK channel.                    |
-| **Flutter: Current Version**          | Check the current Flutter version.                 |
+| Command                                | Description                                                          |
+| -------------------------------------- | -------------------------------------------------------------------- |
+| **Flux: Pub Get**                      | Install the dependencies listed in `pubspec.yaml`.                   |
+| **Flux: Pub Upgrade**                  | Upgrade the packages listed in `pubspec.yaml`.                       |
+| **Flux: Pub Upgrade Major Versions**   | Upgrade to the latest major versions of packages.                    |
+| **Flux: Pub Outdated**                 | Check for outdated packages.                                         |
+| **Flux: Pub Cache Repair**             | Repair the pub cache.                                                |
+| **Flux: Pub Upgrade (Dry Run)**        | Simulate a package upgrade without applying it.                      |
+| **Flux: Pub Downgrade**                | Downgrade the package versions.                                      |
+| **Flux: Pub Version**                  | Show the current Flutter pub version.                                |
+| **Flux: Clean**                        | Remove build artifacts.                                              |
+| **Flux: Test**                         | Run tests for your Flutter application.                              |
+| **Flux: Analyze**                      | Analyze your code for potential issues.                              |
+| **Flux: Create Project**               | Create a new Flutter project.                                        |
+| **Flux: Create CodeLytical Structure** | Create a new project with the CodeLytical structure with `Provider`. |
+| **Flux: Build APK**                    | Build the APK for Android.                                           |
+| **Flux: Build iOS**                    | Build the iOS app.                                                   |
+| **Flux: Build App Bundle**             | Build the app bundle for Android.                                    |
+| **Flux: Pod Install**                  | Install CocoaPods dependencies.                                      |
+| **Flux: Pod Install with Repo Update** | Install CocoaPods with a repo update.                                |
+| **Flux: Pod Update**                   | Update CocoaPods dependencies.                                       |
+| **Flux: Pod Repo Update**              | Update the CocoaPods repo.                                           |
+| **Flux: Pub Add Package**              | Add a package to the `pubspec.yaml`.                                 |
+| **Flux: Pub Remove Package**           | Remove a package from the `pubspec.yaml`.                            |
+| **Flux: Create CodeLytical Riverpod**  | Create a new project with the CodeLytical `Riverpod` structure.      |
 
 ## Requirements
 
