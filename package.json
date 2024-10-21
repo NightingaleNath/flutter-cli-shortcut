@@ -37,33 +37,27 @@
       },
       {
         "command": "flutter-cli-shortcut.flutterPubUpgradeMajorVersions",
-        "title": "Flux: Pub Upgrade Major Versions",
-        "category": "Flutter"
+        "title": "Flux: Pub Upgrade Major Versions"
       },
       {
         "command": "flutter-cli-shortcut.flutterPubOutdated",
-        "title": "Flux: Pub Outdated",
-        "category": "Flutter"
+        "title": "Flux: Pub Outdated"
       },
       {
         "command": "flutter-cli-shortcut.flutterPubCacheRepair",
-        "title": "Flux: Pub Cache Repair",
-        "category": "Flutter"
+        "title": "Flux: Pub Cache Repair"
       },
       {
         "command": "flutter-cli-shortcut.flutterPubUpgradeDryRun",
-        "title": "Flux: Pub Upgrade (Dry Run)",
-        "category": "Flutter"
+        "title": "Flux: Pub Upgrade (Dry Run)"
       },
       {
         "command": "flutter-cli-shortcut.flutterPubDowngrade",
-        "title": "Flux: Pub Downgrade",
-        "category": "Flutter"
+        "title": "Flux: Pub Downgrade"
       },
       {
         "command": "flutter-cli-shortcut.flutterPubVersion",
-        "title": "Flux: Pub Version",
-        "category": "Flutter"
+        "title": "Flux: Pub Version"
       },
       {
         "command": "flutter-cli-shortcut.flutterClean",
@@ -76,6 +70,10 @@
       {
         "command": "flutter-cli-shortcut.flutterAnalyze",
         "title": "Flux: Analyze"
+      },
+      {
+        "command": "flutter-cli-shortcut.detailedFlutterDoctor",
+        "title": "Flux: Detailed Doctor"
       },
       {
         "command": "flutter-cli-shortcut.flutterCreate",
@@ -102,6 +100,10 @@
         "title": "Flux: Build App Bundle"
       },
       {
+        "command": "flutter-cli-shortcut.flutterBuildWithOptions",
+        "title": "Flux: Build for Selected Platforms"
+      },
+      {
         "command": "flutter-cli-shortcut.podInstall",
         "title": "Flux: Pod Install"
       },
@@ -119,13 +121,11 @@
       },
       {
         "command": "flutter-cli-shortcut.flutterPubAdd",
-        "title": "Flux: Pub Add Package",
-        "category": "Flutter"
+        "title": "Flux: Pub Add Package"
       },
       {
         "command": "flutter-cli-shortcut.flutterPubRemove",
-        "title": "Flux: Pub Remove Package",
-        "category": "Flutter"
+        "title": "Flux: Pub Remove Package"
       }
     ]
   },

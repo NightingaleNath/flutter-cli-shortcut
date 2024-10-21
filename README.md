@@ -31,6 +31,8 @@ A collection of useful Flutter CLI commands for quick access.
 | **Flux: Pub Add Package**              | Add a package to the `pubspec.yaml`.                                 |
 | **Flux: Pub Remove Package**           | Remove a package from the `pubspec.yaml`.                            |
 | **Flux: Create CodeLytical Riverpod**  | Create a new project with the CodeLytical `Riverpod` structure.      |
+| **Flux: Build for Selected Platforms** | A command to build application for platforms (Android, iOS, Web).    |
+| **Flux: Detailed Doctor**              | Provide a detailed view of the output from flutter doctor            | 
 
 ## Requirements
 
