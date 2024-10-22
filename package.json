@@ -130,6 +130,10 @@
       {
         "command": "flutter-cli-shortcut.startEmulator",
         "title": "Flux: Start Emulator"
+      },
+      {
+        "command": "flutter-cli-shortcut.listDevices",
+        "title": "Flux: List Devices"
       }
     ]
   },
