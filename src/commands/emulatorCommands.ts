@@ -2,107 +2,170 @@ import * as vscode from "vscode";
 import { getWorkspaceFolder } from "../utils/workspaceUtils";
 import { exec } from 'child_process';
 import { promisify } from 'util';
+import * as os from 'os';
 
-const execPromise = promisify(exec);
+const execAsync = promisify(exec);
 
-export const runTerminalCommand = async (command: string, cwd: string): Promise<string> => {
+// Execute Flutter command with zsh
+const executeFlutterCommand = async (command: string): Promise<string> => {
     try {
-        const { stdout, stderr } = await execPromise(command, { cwd });
-        if (stderr) {
-            throw new Error(stderr);
-        }
+        // Execute command through zsh
+        const { stdout } = await execAsync(`/bin/zsh -i -c "${command}"`, {
+            env: process.env,
+            shell: '/bin/zsh'
+        });
         return stdout;
     } catch (error: any) {
-        throw new Error(`Failed to run command "${command}": ${error.message}`);
+        console.error(`Error executing Flutter command: ${error.message}`);
+        throw error;
     }
 };
 
-
-// Command to list connected devices
-const listDevices = async (workspaceFolder: string) => {
+// Function to get available emulators
+const getEmulators = async (): Promise<string[]> => {
     try {
-        const output = await runTerminalCommand("flutter devices", workspaceFolder);
-        return output.split('\n').filter(line => line.trim() !== '');
-    } catch (error: any) {
-        throw new Error(`Failed to list devices: ${error.message}`);
+        const stdout = await executeFlutterCommand('flutter emulators');
+        const lines = stdout.split('\n');
+        const emulators: string[] = [];
+
+        lines.forEach(line => {
+            if (line.includes('•')) {
+                const name = line.trim();
+                if (name) {
+                    emulators.push(name);
+                }
+            }
+        });
+
+        return emulators;
+    } catch (error) {
+        vscode.window.showErrorMessage(`Error getting emulators: ${error}`);
+        return [];
     }
 };
 
-// Command to manage devices
-export const registerDeviceManagementCommands = (context: vscode.ExtensionContext) => {
+// Function to get connected devices
+const getDevices = async (): Promise<string[]> => {
+    try {
+        const stdout = await executeFlutterCommand('flutter devices');
+        const lines = stdout.split('\n');
+        const devices: string[] = [];
 
-    // Command to list devices
+        let startParsing = false;
+        lines.forEach(line => {
+            if (line.includes('•') && !startParsing) {
+                startParsing = true;
+                return;
+            }
+            if (startParsing && line.includes('•')) {
+                const deviceName = line.trim();
+                if (deviceName) {
+                    devices.push(deviceName);
+                }
+            }
+        });
+
+        return devices;
+    } catch (error) {
+        vscode.window.showErrorMessage(`Error getting devices: ${error}`);
+        return [];
+    }
+};
+
+// Command to run a terminal command using VSCode's terminal
+export const runTerminalCommandInVSCodeTerminal = (command: string, cwd: string): void => {
+    const terminal = vscode.window.createTerminal({
+        name: `Flutter: ${command}`,
+        cwd,
+        shellPath: '/bin/zsh',
+    });
+    terminal.show();
+    terminal.sendText(command);
+};
+
+// Register the commands for starting and stopping emulators
+export const registerDeviceManagementCommands = (context: vscode.ExtensionContext) => {
+    // Command to list devices (physical devices + running emulators)
     let listDevicesCommand = vscode.commands.registerCommand("flutter-cli-shortcut.listDevices", async () => {
         const workspaceFolder = getWorkspaceFolder();
         if (!workspaceFolder) {
-            return; // Error message is already shown in the utility
+            vscode.window.showErrorMessage("Workspace folder not found.");
+            return;
         }
 
-        try {
-            const devices = await listDevices(workspaceFolder);
-            vscode.window.showInformationMessage("Connected devices:\n" + devices.join("\n"));
-        } catch (error: any) {
-            vscode.window.showErrorMessage(error.message);
+        const devices = await getDevices();
+        if (devices.length === 0) {
+            vscode.window.showInformationMessage("No devices found.");
+            return;
+        }
+
+        const selectedDevice = await vscode.window.showQuickPick(devices, {
+            placeHolder: "Select a device to view details",
+        });
+
+        if (selectedDevice) {
+            vscode.window.showInformationMessage(`Selected device: ${selectedDevice}`);
         }
     });
 
-    // Command to start a device
-    let startDeviceCommand = vscode.commands.registerCommand("flutter-cli-shortcut.startDevice", async () => {
+    // Command to list and start an emulator
+    let startEmulatorCommand = vscode.commands.registerCommand("flutter-cli-shortcut.startEmulator", async () => {
         const workspaceFolder = getWorkspaceFolder();
         if (!workspaceFolder) {
-            return; // Error message is already shown in the utility
+            vscode.window.showErrorMessage("Workspace folder not found.");
+            return;
         }
 
         try {
-            const devices = await listDevices(workspaceFolder);
-            if (devices.length === 0) {
-                vscode.window.showErrorMessage("No devices available to start.");
+            const emulators = await getEmulators();
+            if (emulators.length === 0) {
+                vscode.window.showInformationMessage("No emulators found.");
                 return;
             }
 
-            const deviceToStart = await vscode.window.showQuickPick(devices, { placeHolder: "Select a device to start" });
-            if (!deviceToStart) {
-                vscode.window.showErrorMessage("No device selected. Start aborted.");
-                return;
-            }
+            const selectedEmulator = await vscode.window.showQuickPick(emulators, {
+                placeHolder: "Select an emulator to start",
+            });
 
-            await runTerminalCommand(`flutter emulators --launch ${deviceToStart}`, workspaceFolder);
-            vscode.window.showInformationMessage(`Successfully started device: ${deviceToStart}`);
+            if (selectedEmulator) {
+                const emulatorId = selectedEmulator.split('•')[0].trim();
+                runTerminalCommandInVSCodeTerminal(`flutter emulators --launch ${emulatorId}`, workspaceFolder);
+                vscode.window.showInformationMessage(`Starting emulator: ${selectedEmulator}`);
+            }
         } catch (error: any) {
             vscode.window.showErrorMessage(error.message);
         }
     });
 
-    // Command to stop a device
+    // Command to stop a running emulator
     let stopDeviceCommand = vscode.commands.registerCommand("flutter-cli-shortcut.stopDevice", async () => {
         const workspaceFolder = getWorkspaceFolder();
         if (!workspaceFolder) {
-            return; // Error message is already shown in the utility
+            vscode.window.showErrorMessage("Workspace folder not found.");
+            return;
         }
 
-        try {
-            const devices = await listDevices(workspaceFolder);
-            if (devices.length === 0) {
-                vscode.window.showErrorMessage("No devices available to stop.");
-                return;
-            }
+        const devices = await getDevices();
+        const runningEmulators = devices.filter(device => device.toLowerCase().includes('emulator'));
 
-            const deviceToStop = await vscode.window.showQuickPick(devices, { placeHolder: "Select a device to stop" });
-            if (!deviceToStop) {
-                vscode.window.showErrorMessage("No device selected. Stop aborted.");
-                return;
-            }
+        if (runningEmulators.length === 0) {
+            vscode.window.showInformationMessage("No running emulators found.");
+            return;
+        }
 
-            // For Android, we typically use ADB commands to stop
-            await runTerminalCommand(`adb -s ${deviceToStop} emu kill`, workspaceFolder);
-            vscode.window.showInformationMessage(`Successfully stopped device: ${deviceToStop}`);
-        } catch (error: any) {
-            vscode.window.showErrorMessage(error.message);
+        const selectedDevice = await vscode.window.showQuickPick(runningEmulators, {
+            placeHolder: "Select a running emulator to stop",
+        });
+
+        if (selectedDevice) {
+            const deviceId = selectedDevice.split('•')[0].trim();
+            runTerminalCommandInVSCodeTerminal(`adb -s ${deviceId} emu kill`, workspaceFolder);
+            vscode.window.showInformationMessage(`Stopping device/emulator: ${selectedDevice}`);
         }
     });
 
-    // Register the commands
+    // Register all the commands
     context.subscriptions.push(listDevicesCommand);
-    context.subscriptions.push(startDeviceCommand);
+    context.subscriptions.push(startEmulatorCommand);
     context.subscriptions.push(stopDeviceCommand);
 };

@@ -3,12 +3,6 @@
 /******/ 	var __webpack_modules__ = ([
 /* 0 */,
 /* 1 */
-/***/ ((module) => {
-
-module.exports = require("vscode");
-
-/***/ }),
-/* 2 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 
@@ -37,7 +31,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.registerBuildCommands = void 0;
-const vscode = __importStar(__webpack_require__(1));
+const vscode = __importStar(__webpack_require__(2));
 const terminalUtils_1 = __webpack_require__(3);
 const workspaceUtils_1 = __webpack_require__(4);
 const constants_1 = __webpack_require__(5);
@@ -139,6 +133,12 @@ exports.registerBuildCommands = registerBuildCommands;
 
 
 /***/ }),
+/* 2 */
+/***/ ((module) => {
+
+module.exports = require("vscode");
+
+/***/ }),
 /* 3 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
@@ -168,7 +168,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.runTerminalCommand = exports.runTerminalCommandWithOutput = void 0;
-const vscode = __importStar(__webpack_require__(1));
+const vscode = __importStar(__webpack_require__(2));
 const runTerminalCommandWithOutput = async (command, cwd) => {
     const outputChannel = vscode.window.createOutputChannel("Flutter Doctor Output");
     outputChannel.show();
@@ -259,7 +259,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.getWorkspaceFolder = void 0;
-const vscode = __importStar(__webpack_require__(1));
+const vscode = __importStar(__webpack_require__(2));
 const getWorkspaceFolder = () => {
     const workspaceFolder = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
     if (!workspaceFolder) {
@@ -357,7 +357,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.registerDoctorCommand = void 0;
-const vscode = __importStar(__webpack_require__(1));
+const vscode = __importStar(__webpack_require__(2));
 const terminalUtils_1 = __webpack_require__(3);
 const workspaceUtils_1 = __webpack_require__(4);
 const constants_1 = __webpack_require__(5);
@@ -438,7 +438,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.registerPubCommands = void 0;
-const vscode = __importStar(__webpack_require__(1));
+const vscode = __importStar(__webpack_require__(2));
 const terminalUtils_1 = __webpack_require__(3);
 const workspaceUtils_1 = __webpack_require__(4);
 const constants_1 = __webpack_require__(5);
@@ -630,7 +630,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.registerPodCommands = void 0;
-const vscode = __importStar(__webpack_require__(1));
+const vscode = __importStar(__webpack_require__(2));
 const path = __importStar(__webpack_require__(9));
 const terminalUtils_1 = __webpack_require__(3);
 const workspaceUtils_1 = __webpack_require__(4);
@@ -838,7 +838,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.registerFlutterCommands = void 0;
-const vscode = __importStar(__webpack_require__(1));
+const vscode = __importStar(__webpack_require__(2));
 const terminalUtils_1 = __webpack_require__(3);
 const workspaceUtils_1 = __webpack_require__(4);
 const constants_1 = __webpack_require__(5);
@@ -918,7 +918,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.registerCreateCommands = void 0;
-const vscode = __importStar(__webpack_require__(1));
+const vscode = __importStar(__webpack_require__(2));
 const path = __importStar(__webpack_require__(9));
 const fs = __importStar(__webpack_require__(12));
 const terminalUtils_1 = __webpack_require__(3);
@@ -1202,6 +1202,203 @@ function runTerminalCommandWithTimeout(arg0, workspaceFolder) {
 
 module.exports = require("fs");
 
+/***/ }),
+/* 13 */
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.registerDeviceManagementCommands = exports.runTerminalCommandInVSCodeTerminal = void 0;
+const vscode = __importStar(__webpack_require__(2));
+const workspaceUtils_1 = __webpack_require__(4);
+const child_process_1 = __webpack_require__(14);
+const util_1 = __webpack_require__(15);
+const execAsync = (0, util_1.promisify)(child_process_1.exec);
+// Execute Flutter command with zsh
+const executeFlutterCommand = async (command) => {
+    try {
+        // Execute command through zsh
+        const { stdout } = await execAsync(`/bin/zsh -i -c "${command}"`, {
+            env: process.env,
+            shell: '/bin/zsh'
+        });
+        return stdout;
+    }
+    catch (error) {
+        console.error(`Error executing Flutter command: ${error.message}`);
+        throw error;
+    }
+};
+// Function to get available emulators
+const getEmulators = async () => {
+    try {
+        const stdout = await executeFlutterCommand('flutter emulators');
+        const lines = stdout.split('\n');
+        const emulators = [];
+        lines.forEach(line => {
+            if (line.includes('•')) {
+                const name = line.trim();
+                if (name) {
+                    emulators.push(name);
+                }
+            }
+        });
+        return emulators;
+    }
+    catch (error) {
+        vscode.window.showErrorMessage(`Error getting emulators: ${error}`);
+        return [];
+    }
+};
+// Function to get connected devices
+const getDevices = async () => {
+    try {
+        const stdout = await executeFlutterCommand('flutter devices');
+        const lines = stdout.split('\n');
+        const devices = [];
+        let startParsing = false;
+        lines.forEach(line => {
+            if (line.includes('•') && !startParsing) {
+                startParsing = true;
+                return;
+            }
+            if (startParsing && line.includes('•')) {
+                const deviceName = line.trim();
+                if (deviceName) {
+                    devices.push(deviceName);
+                }
+            }
+        });
+        return devices;
+    }
+    catch (error) {
+        vscode.window.showErrorMessage(`Error getting devices: ${error}`);
+        return [];
+    }
+};
+// Command to run a terminal command using VSCode's terminal
+const runTerminalCommandInVSCodeTerminal = (command, cwd) => {
+    const terminal = vscode.window.createTerminal({
+        name: `Flutter: ${command}`,
+        cwd,
+        shellPath: '/bin/zsh',
+    });
+    terminal.show();
+    terminal.sendText(command);
+};
+exports.runTerminalCommandInVSCodeTerminal = runTerminalCommandInVSCodeTerminal;
+// Register the commands for starting and stopping emulators
+const registerDeviceManagementCommands = (context) => {
+    // Command to list devices (physical devices + running emulators)
+    let listDevicesCommand = vscode.commands.registerCommand("flutter-cli-shortcut.listDevices", async () => {
+        const workspaceFolder = (0, workspaceUtils_1.getWorkspaceFolder)();
+        if (!workspaceFolder) {
+            vscode.window.showErrorMessage("Workspace folder not found.");
+            return;
+        }
+        const devices = await getDevices();
+        if (devices.length === 0) {
+            vscode.window.showInformationMessage("No devices found.");
+            return;
+        }
+        const selectedDevice = await vscode.window.showQuickPick(devices, {
+            placeHolder: "Select a device to view details",
+        });
+        if (selectedDevice) {
+            vscode.window.showInformationMessage(`Selected device: ${selectedDevice}`);
+        }
+    });
+    // Command to list and start an emulator
+    let startEmulatorCommand = vscode.commands.registerCommand("flutter-cli-shortcut.startEmulator", async () => {
+        const workspaceFolder = (0, workspaceUtils_1.getWorkspaceFolder)();
+        if (!workspaceFolder) {
+            vscode.window.showErrorMessage("Workspace folder not found.");
+            return;
+        }
+        try {
+            const emulators = await getEmulators();
+            if (emulators.length === 0) {
+                vscode.window.showInformationMessage("No emulators found.");
+                return;
+            }
+            const selectedEmulator = await vscode.window.showQuickPick(emulators, {
+                placeHolder: "Select an emulator to start",
+            });
+            if (selectedEmulator) {
+                const emulatorId = selectedEmulator.split('•')[0].trim();
+                (0, exports.runTerminalCommandInVSCodeTerminal)(`flutter emulators --launch ${emulatorId}`, workspaceFolder);
+                vscode.window.showInformationMessage(`Starting emulator: ${selectedEmulator}`);
+            }
+        }
+        catch (error) {
+            vscode.window.showErrorMessage(error.message);
+        }
+    });
+    // Command to stop a running emulator
+    let stopDeviceCommand = vscode.commands.registerCommand("flutter-cli-shortcut.stopDevice", async () => {
+        const workspaceFolder = (0, workspaceUtils_1.getWorkspaceFolder)();
+        if (!workspaceFolder) {
+            vscode.window.showErrorMessage("Workspace folder not found.");
+            return;
+        }
+        const devices = await getDevices();
+        const runningEmulators = devices.filter(device => device.toLowerCase().includes('emulator'));
+        if (runningEmulators.length === 0) {
+            vscode.window.showInformationMessage("No running emulators found.");
+            return;
+        }
+        const selectedDevice = await vscode.window.showQuickPick(runningEmulators, {
+            placeHolder: "Select a running emulator to stop",
+        });
+        if (selectedDevice) {
+            const deviceId = selectedDevice.split('•')[0].trim();
+            (0, exports.runTerminalCommandInVSCodeTerminal)(`adb -s ${deviceId} emu kill`, workspaceFolder);
+            vscode.window.showInformationMessage(`Stopping device/emulator: ${selectedDevice}`);
+        }
+    });
+    // Register all the commands
+    context.subscriptions.push(listDevicesCommand);
+    context.subscriptions.push(startEmulatorCommand);
+    context.subscriptions.push(stopDeviceCommand);
+};
+exports.registerDeviceManagementCommands = registerDeviceManagementCommands;
+
+
+/***/ }),
+/* 14 */
+/***/ ((module) => {
+
+module.exports = require("child_process");
+
+/***/ }),
+/* 15 */
+/***/ ((module) => {
+
+module.exports = require("util");
+
 /***/ })
 /******/ 	]);
 /************************************************************************/
@@ -1238,12 +1435,13 @@ var exports = __webpack_exports__;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.activate = activate;
 exports.deactivate = deactivate;
-const buildCommands_1 = __webpack_require__(2);
+const buildCommands_1 = __webpack_require__(1);
 const doctorCommands_1 = __webpack_require__(6);
 const pubCommands_1 = __webpack_require__(7);
 const podCommands_1 = __webpack_require__(8);
 const flutterCommands_1 = __webpack_require__(10);
 const createCommands_1 = __webpack_require__(11);
+const emulatorCommands_1 = __webpack_require__(13);
 function activate(context) {
     (0, buildCommands_1.registerBuildCommands)(context);
     (0, doctorCommands_1.registerDoctorCommand)(context);
@@ -1251,6 +1449,7 @@ function activate(context) {
     (0, podCommands_1.registerPodCommands)(context);
     (0, flutterCommands_1.registerFlutterCommands)(context);
     (0, createCommands_1.registerCreateCommands)(context);
+    (0, emulatorCommands_1.registerDeviceManagementCommands)(context);
 }
 function deactivate() { }
 

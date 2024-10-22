@@ -126,6 +126,10 @@
       {
         "command": "flutter-cli-shortcut.flutterPubRemove",
         "title": "Flux: Pub Remove Package"
+      },
+      {
+        "command": "flutter-cli-shortcut.startEmulator",
+        "title": "Flux: Start Emulator"
       }
     ]
   },
