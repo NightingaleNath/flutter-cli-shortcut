@@ -1,6 +1,4 @@
 import * as vscode from "vscode";
-import * as path from "path";
-import * as fs from "fs";
 import { runTerminalCommand } from "../utils/terminalUtils";
 import { getWorkspaceFolder } from "../utils/workspaceUtils";
 import { COMMANDS, MESSAGES } from "../constants";
@@ -77,9 +75,31 @@ export const registerFlutterCommands = (context: vscode.ExtensionContext) => {
         }
     );
 
+    // Clean and rebuild command
+    let cleanAndRebuild = vscode.commands.registerCommand(
+        COMMANDS.FLUTTER_CLEAN_REBUILD,
+        async () => {
+            if (!workspaceFolder) {
+                vscode.window.showErrorMessage(MESSAGES.NO_WORKSPACE);
+                return;
+            }
+
+            try {
+                await runTerminalCommand("flutter clean && flutter pub get", workspaceFolder);
+                vscode.window.showInformationMessage(
+                    "Successfully cleaned and rebuilt the project."
+                );
+            } catch (error: any) {
+                vscode.window.showErrorMessage(
+                    `Failed to clean and rebuild: ${error.message}`
+                );
+            }
+        }
+    );
+
     context.subscriptions.push(
         flutterClean,
         flutterTest,
-        flutterAnalyze
+        flutterAnalyze, cleanAndRebuild
     );
 }

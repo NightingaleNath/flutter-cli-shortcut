@@ -306,6 +306,9 @@ exports.COMMANDS = {
     FLUTTER_TEST: "flutter-cli-shortcut.flutterTest",
     FLUTTER_ANALYZE: "flutter-cli-shortcut.flutterAnalyze",
     MANAGE_EMULATORS: "flutter-cli-shortcut.manageEmulators",
+    FLUTTER_GENERATE_JSON_MODEL: "flutter-cli-shortcut.generateJsonModel",
+    FLUTTER_CLEAN_REBUILD: "flutter-cli-shortcut.cleanRebuild",
+    FLUTTER_GENERATE_UTILS: "flutter-cli-shortcut.generateUtils"
 };
 exports.MESSAGES = {
     NO_WORKSPACE: "No workspace folder found. Please open a Flutter project folder.",
@@ -883,7 +886,21 @@ const registerFlutterCommands = (context) => {
             vscode.window.showErrorMessage(`Failed to run 'flutter analyze': ${error.message}`);
         }
     });
-    context.subscriptions.push(flutterClean, flutterTest, flutterAnalyze);
+    // Clean and rebuild command
+    let cleanAndRebuild = vscode.commands.registerCommand(constants_1.COMMANDS.FLUTTER_CLEAN_REBUILD, async () => {
+        if (!workspaceFolder) {
+            vscode.window.showErrorMessage(constants_1.MESSAGES.NO_WORKSPACE);
+            return;
+        }
+        try {
+            await (0, terminalUtils_1.runTerminalCommand)("flutter clean && flutter pub get", workspaceFolder);
+            vscode.window.showInformationMessage("Successfully cleaned and rebuilt the project.");
+        }
+        catch (error) {
+            vscode.window.showErrorMessage(`Failed to clean and rebuild: ${error.message}`);
+        }
+    });
+    context.subscriptions.push(flutterClean, flutterTest, flutterAnalyze, cleanAndRebuild);
 };
 exports.registerFlutterCommands = registerFlutterCommands;
 
@@ -1460,6 +1477,778 @@ module.exports = require("child_process");
 
 module.exports = require("util");
 
+/***/ }),
+/* 16 */
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.registerComplexCommands = void 0;
+const vscode = __importStar(__webpack_require__(2));
+const path = __importStar(__webpack_require__(9));
+const workspaceUtils_1 = __webpack_require__(4);
+const constants_1 = __webpack_require__(5);
+// Helper function to convert snake_case to PascalCase
+const toPascalCase = (str) => {
+    return str
+        .split('_')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+        .join('');
+};
+// Helper function to convert class name to snake_case file name
+const classNameToFileName = (className) => {
+    const fileName = className
+        .replace(/([a-z])([A-Z])/g, '$1_$2')
+        .toLowerCase();
+    return `${fileName}.dart`;
+};
+// Helper function to convert snake_case to camelCase
+const toCamelCase = (str) => {
+    const pascal = toPascalCase(str);
+    return pascal.charAt(0).toLowerCase() + pascal.slice(1);
+};
+// Helper function to generate model property with dynamic handling
+const generateModelProperty = (key, value) => {
+    let type = 'dynamic'; // Default is dynamic
+    if (typeof value === 'string')
+        type = 'String';
+    else if (typeof value === 'number') {
+        type = Number.isInteger(value) ? 'int' : 'double';
+    }
+    else if (typeof value === 'boolean')
+        type = 'bool';
+    else if (Array.isArray(value)) {
+        if (value.length > 0 && typeof value[0] === 'object') {
+            type = `List<${toPascalCase(key.slice(0, -1))}Model>`;
+        }
+        else {
+            type = 'List<dynamic>';
+        }
+    }
+    else if (typeof value === 'object' && value !== null) {
+        type = `${toPascalCase(key)}Model`;
+    }
+    const camelCaseKey = toCamelCase(key);
+    // For dynamic types, no nullability is needed, so omit the ?
+    return type === 'dynamic'
+        ? `  final ${type} ${camelCaseKey};`
+        : `  final ${type}? ${camelCaseKey};`;
+};
+// Helper function to generate fromJson method with null checks
+const generateFromJson = (className, json) => {
+    let fromJsonContent = `  factory ${className}.fromJson(Map<String, dynamic> json) {\n    return ${className}(\n`;
+    for (const [key, value] of Object.entries(json)) {
+        const camelCaseKey = toCamelCase(key);
+        // Check if the type is dynamic (no null checks for dynamic types)
+        if (typeof value === 'string') {
+            fromJsonContent += `      ${camelCaseKey}: json['${key}'] ?? "",\n`;
+        }
+        else if (typeof value === 'number') {
+            fromJsonContent += `      ${camelCaseKey}: json['${key}'] ?? ${Number.isInteger(value) ? 0 : 0.0},\n`;
+        }
+        else if (typeof value === 'boolean') {
+            fromJsonContent += `      ${camelCaseKey}: json['${key}'] ?? false,\n`;
+        }
+        else if (Array.isArray(value) && value.length > 0 && typeof value[0] === 'object') {
+            const subClassName = `${toPascalCase(key.slice(0, -1))}Model`;
+            fromJsonContent += `      ${camelCaseKey}: json.containsKey('${key}') && json['${key}'] != null\n` +
+                `          ? List<${subClassName}>.from(json['${key}'].map((x) => ${subClassName}.fromJson(x as Map<String, dynamic>)))\n` +
+                `          : [],\n`;
+        }
+        else if (typeof value === 'object' && value !== null) {
+            const subClassName = `${toPascalCase(key)}Model`;
+            fromJsonContent += `      ${camelCaseKey}: ${subClassName}.fromJson(json['${key}'] ?? {}),\n`;
+        }
+        else if (typeof value === 'object' || typeof value === 'undefined') {
+            fromJsonContent += `      ${camelCaseKey}: json['${key}'],\n`; // No null check for dynamic
+        }
+    }
+    fromJsonContent += '    );\n  }';
+    return fromJsonContent;
+};
+// Helper function to generate nested models
+const generateNestedModels = (json) => {
+    const models = [];
+    for (const [key, value] of Object.entries(json)) {
+        if (Array.isArray(value) && value.length > 0 && typeof value[0] === 'object') {
+            const className = `${toPascalCase(key.slice(0, -1))}Model`;
+            models.push(generateModel(className, value[0]));
+        }
+        else if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+            const className = `${toPascalCase(key)}Model`;
+            models.push(generateModel(className, value));
+        }
+    }
+    return models;
+};
+// Helper function to generate complete model
+const generateModel = (className, json) => {
+    let modelContent = `class ${className} {\n`;
+    // Properties
+    for (const [key, value] of Object.entries(json)) {
+        modelContent += generateModelProperty(key, value) + '\n';
+    }
+    // Constructor - Fixed to use actual class name instead of string interpolation
+    modelContent += `\n  ${className}({\n`; // Remove the $ and {}
+    for (const key of Object.keys(json)) {
+        const camelCaseKey = toCamelCase(key);
+        modelContent += `    this.${camelCaseKey},\n`;
+    }
+    modelContent += '  });\n\n';
+    // FromJson method
+    modelContent += generateFromJson(className, json) + '\n\n';
+    // ToJson method
+    modelContent += '  Map<String, dynamic> toJson() => {\n';
+    for (const [key, value] of Object.entries(json)) {
+        const camelCaseKey = toCamelCase(key);
+        if (Array.isArray(value) && value.length > 0 && typeof value[0] === 'object') {
+            modelContent += `        '${key}': ${camelCaseKey}?.map((x) => x.toJson()).toList(),\n`;
+        }
+        else if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+            modelContent += `        '${key}': ${camelCaseKey}?.toJson(),\n`;
+        }
+        else {
+            modelContent += `        '${key}': ${camelCaseKey},\n`;
+        }
+    }
+    modelContent += '      };\n';
+    modelContent += '}\n';
+    return modelContent;
+};
+// Helper function to find models directory
+const findModelsDirectory = async (workspaceFolder) => {
+    const possiblePaths = [
+        'lib/models',
+        'lib/model',
+        'lib/src/models',
+        'lib/src/model',
+        'lib/core/models',
+        'lib/core/model',
+        'lib/data/models',
+        'lib/data/model',
+    ];
+    for (const relativePath of possiblePaths) {
+        const fullPath = path.join(workspaceFolder, relativePath);
+        try {
+            await vscode.workspace.fs.stat(vscode.Uri.file(fullPath));
+            return fullPath;
+        }
+        catch (error) {
+            // Directory doesn't exist, continue checking
+        }
+    }
+    return null;
+};
+const registerComplexCommands = (context) => {
+    const workspaceFolder = (0, workspaceUtils_1.getWorkspaceFolder)();
+    // Generate JSON serialization code command
+    let generateJsonModel = vscode.commands.registerCommand(constants_1.COMMANDS.FLUTTER_GENERATE_JSON_MODEL, async () => {
+        if (!workspaceFolder) {
+            vscode.window.showErrorMessage(constants_1.MESSAGES.NO_WORKSPACE);
+            return;
+        }
+        try {
+            // Show input box for JSON
+            const jsonInput = await vscode.window.showInputBox({
+                prompt: "Paste your JSON structure",
+                placeHolder: '{"key": "value"}',
+                ignoreFocusOut: true
+            });
+            if (!jsonInput)
+                return;
+            let jsonObject;
+            try {
+                jsonObject = JSON.parse(jsonInput);
+            }
+            catch (parseError) {
+                vscode.window.showErrorMessage('Invalid JSON format. Please check your input.');
+                return;
+            }
+            // Get class name from user
+            const className = await vscode.window.showInputBox({
+                prompt: "Enter the main class name (e.g., CodeLyticalResponse, CodeLytical, Payment)",
+                placeHolder: 'e.g., CodeLyticalResponse, CodeLytical, Payment, BillPayment etc',
+                validateInput: (value) => {
+                    return /^[A-Z][a-zA-Z0-9]*$/.test(value)
+                        ? null
+                        : 'Class name must start with an uppercase letter and contain only letters and numbers';
+                }
+            });
+            if (!className)
+                return;
+            // Find existing models directory
+            const modelsDir = await findModelsDirectory(workspaceFolder);
+            let targetDir;
+            if (!modelsDir) {
+                // Ask user where to create the models directory
+                const selectedFolder = await vscode.window.showQuickPick([
+                    'lib/models',
+                    'lib/model',
+                    'lib/src/models',
+                    'lib/core/models',
+                    'lib/data/models',
+                    'Custom location...'
+                ], {
+                    placeHolder: 'Select where to create the models directory'
+                });
+                if (!selectedFolder)
+                    return;
+                if (selectedFolder === 'Custom location...') {
+                    const customPath = await vscode.window.showInputBox({
+                        prompt: "Enter the path relative to the project root (e.g., lib/core/models)",
+                        placeHolder: 'lib/your/path/here'
+                    });
+                    if (!customPath)
+                        return;
+                    targetDir = path.join(workspaceFolder, customPath);
+                }
+                else {
+                    targetDir = path.join(workspaceFolder, selectedFolder);
+                }
+                // Create directory recursively
+                await vscode.workspace.fs.createDirectory(vscode.Uri.file(targetDir));
+            }
+            else {
+                targetDir = modelsDir;
+            }
+            // Generate the model content
+            const fullClassName = `${className}`;
+            let modelContent = generateModel(fullClassName, jsonObject);
+            // Generate nested models
+            const nestedModels = generateNestedModels(jsonObject);
+            modelContent = nestedModels.join('\n\n') + '\n\n' + modelContent;
+            // Create new file with the appropriate snake_case name
+            const newFile = vscode.Uri.file(path.join(targetDir, classNameToFileName(className)));
+            const fileContent = new TextEncoder().encode(`// Generated using Flux JSON Model Generator\n\n${modelContent}`);
+            await vscode.workspace.fs.writeFile(newFile, fileContent);
+            // Open the generated file
+            const document = await vscode.workspace.openTextDocument(newFile);
+            await vscode.window.showTextDocument(document);
+            vscode.window.showInformationMessage(`Successfully generated model in ${newFile.fsPath}`);
+        }
+        catch (error) {
+            vscode.window.showErrorMessage(`Failed to generate model: ${error.message}`);
+        }
+    });
+    context.subscriptions.push(generateJsonModel);
+};
+exports.registerComplexCommands = registerComplexCommands;
+
+
+/***/ }),
+/* 17 */
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.registerUtilsCommand = void 0;
+const vscode = __importStar(__webpack_require__(2));
+const path = __importStar(__webpack_require__(9));
+const workspaceUtils_1 = __webpack_require__(4);
+const constants_1 = __webpack_require__(5);
+const child_process_1 = __webpack_require__(14);
+const util_1 = __webpack_require__(15);
+const terminalUtils_1 = __webpack_require__(3);
+const execPromise = (0, util_1.promisify)(child_process_1.exec);
+// Helper function to find utils directory
+const findUtilsDirectory = async (workspaceFolder) => {
+    const possiblePaths = [
+        'lib/utils',
+        'lib/util',
+        'lib/src/utils',
+        'lib/src/util',
+        'lib/core/utils',
+        'lib/core/util',
+        'lib/common/utils',
+        'lib/shared/utils',
+    ];
+    for (const relativePath of possiblePaths) {
+        const fullPath = path.join(workspaceFolder, relativePath);
+        try {
+            await vscode.workspace.fs.stat(vscode.Uri.file(fullPath));
+            return fullPath;
+        }
+        catch (error) {
+            // Directory doesn't exist, continue checking
+        }
+    }
+    return null;
+};
+// Helper function to check if `intl` is already in pubspec.yaml
+const checkForIntlInPubspec = async (workspaceFolder) => {
+    const pubspecPath = path.join(workspaceFolder, 'pubspec.yaml');
+    try {
+        const pubspecFile = await vscode.workspace.fs.readFile(vscode.Uri.file(pubspecPath));
+        const pubspecContent = pubspecFile.toString();
+        return pubspecContent.includes('intl:');
+    }
+    catch (error) {
+        // pubspec.yaml doesn't exist or can't be read
+        return false;
+    }
+};
+// Generate the utilities content
+const generateUtilsContent = () => {
+    return `
+import 'package:intl/intl.dart';
+
+extension StringExtension on String {
+  /// Converts string to sentence case
+  /// Example: "john doe".toSentenceCase() returns "John Doe"
+  String toSentenceCase() {
+    if (isEmpty) return this;
+    return split(' ')
+        .map((word) => word.isEmpty
+            ? ''
+            : "\${word[0].toUpperCase()}\${word.substring(1).toLowerCase()}")
+        .join(' ');
+  }
+
+  /// Removes specified characters from the string
+  /// Example: "hello@world".removeCharacters(['@']) returns "helloworld"
+  String removeCharacters([List<String>? chars]) {
+    final List<String> defaultChars = ['@', '#', r'$','%', '^', '&', '*', '(', ')', '!', '~','-', '=', '+', '{', '}', '[', ']', ':', ';', '<', '>'];
+    final List < String > charactersToRemove = chars ?? defaultChars;
+
+    String result = this;
+    for (final char in charactersToRemove) {
+      result = result.replaceAll(char, '');
+    }
+    return result;
+  }
+
+  /// Checks if the string is a valid email address
+  /// Example: "test@example.com".isValidEmail returns true
+  bool get isValidEmail {
+    final emailRegExp = RegExp(
+      r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$',
+    );
+    return emailRegExp.hasMatch(this);
+  }
+
+  /// Formats amount with currency for different countries
+  /// Example: "1000".formatAmount("USD") returns "\$1,000.00"
+  String formatAmount([String currencyCode = 'USD']) {
+    try {
+      final amount = double.parse(replaceAll(RegExp(r'[^0-9.]'), ''));
+      final format = NumberFormat.currency(
+        locale: _getLocaleForCurrency(currencyCode),
+        symbol: _getCurrencySymbol(currencyCode),
+        decimalDigits: 2,
+      );
+      return format.format(amount);
+    } catch (e) {
+      return this;
+    }
+  }
+
+  /// Formats date string according to specified format
+  /// Example: "2024-03-14".formatDateTime("MMMM d, y") returns "March 14, 2024"
+  String formatDateTime(String format, {String? inputFormat}) {
+    try {
+      DateTime dateTime;
+      if (inputFormat != null) {
+        dateTime = DateFormat(inputFormat).parse(this);
+      } else {
+        dateTime = DateTime.parse(this);
+      }
+      return DateFormat(format).format(dateTime);
+    } catch (e) {
+      return this;
+    }
+  }
+
+  /// Formats date to ordinal format (1st, 2nd, 3rd, etc.)
+  /// Example: "2024-03-14".toOrdinalDate() returns "14th March, 2024"
+  String toOrdinalDate() {
+    try {
+      final dateTime = DateTime.parse(this);
+      final day = dateTime.day;
+      final suffix = _getOrdinalSuffix(day);
+      return DateFormat("d'\$suffix' MMMM, y").format(dateTime);
+    } catch (e) {
+      return this;
+    }
+  }
+
+  /// Capitalizes first letter of each word
+  /// Example: "hello world".toTitleCase() returns "Hello World"
+  String toTitleCase() {
+    if (isEmpty) return this;
+    return split(' ').map((word) => word.isEmpty ? '' : word[0].toUpperCase() + word.substring(1)).join(' ');
+  }
+
+  /// Extracts numbers from string
+  /// Example: "Product123".extractNumbers() returns "123"
+  String extractNumbers() {
+    return replaceAll(RegExp(r'[^0-9]'), '');
+  }
+
+  /// Slugify string (URL-friendly version)
+  /// Example: "Hello World! 123".toSlug() returns "hello-world-123"
+  String toSlug() {
+    return toLowerCase()
+        .replaceAll(RegExp(r'[^a-z0-9]+'), '-')
+        .replaceAll(RegExp(r'^-+|-+$'), '');
+  }
+
+  /// Validates password strength
+  /// Returns a map with validation details
+  /// Example: "Password123!".validatePassword()
+  Map<String, bool> validatePassword({
+    int minLength = 8,
+    bool requireUppercase = true,
+    bool requireLowercase = true,
+    bool requireNumbers = true,
+    bool requireSpecialChars = true,
+  }) {
+    return {
+      'minLength': length >= minLength,
+      'hasUppercase': !requireUppercase || contains(RegExp(r'[A-Z]')),
+      'hasLowercase': !requireLowercase || contains(RegExp(r'[a-z]')),
+      'hasNumbers': !requireNumbers || contains(RegExp(r'[0-9]')),
+      'hasSpecialChars': !requireSpecialChars || 
+          contains(RegExp(r'[!@#$%^&*(),.?":{}|<>]')),
+    };
+  }
+}
+
+String _getOrdinalSuffix(int day) {
+  if (day >= 11 && day <= 13) {
+    return 'th';
+  }
+  switch (day % 10) {
+    case 1:
+      return 'st';
+    case 2:
+      return 'nd';
+    case 3:
+      return 'rd';
+    default:
+      return 'th';
+  }
+}
+
+String _getLocaleForCurrency(String currencyCode) {
+  final currencyLocales = {
+    'USD': 'en_US',
+    'EUR': 'de_DE',
+    'GBP': 'en_GB',
+    'JPY': 'ja_JP',
+    'CNY': 'zh_CN',
+    'GHS': 'en_GH',
+    'NGN': 'en_NG',
+    'KES': 'en_KE',
+    'ZAR': 'en_ZA',
+    'EGP': 'ar_EG',
+    // Add more currency codes and locales as needed
+  };
+  return currencyLocales[currencyCode] ?? 'en_US';
+}
+
+String _getCurrencySymbol(String currencyCode) {
+  final currencySymbols = {
+    'USD': r'$',
+    'EUR': '€',
+    'GBP': '£',
+    'JPY': '¥',
+    'CNY': '¥',
+    'GHS': '₵',
+    'NGN': '₦',
+    'KES': 'KSh',
+    'ZAR': 'R',
+    'EGP': 'E£',
+    // Add more currency symbols as needed
+  };
+  return currencySymbols[currencyCode] ?? currencyCode;
+}
+
+extension NumericExtension on num {
+  /// Formats number as currency
+  /// Example: 1000.formatAmount("USD") returns "\$1,000.00"
+  String formatAmount([String currencyCode = 'USD']) {
+    return toString().formatAmount(currencyCode);
+  }
+
+  /// Formats number in a compact form with K (thousand), M (million), B (billion), T (trillion) suffixes.
+  ///
+  /// Example:
+  /// 999.formatCompact() returns "999"
+  /// 1500.formatCompact() returns "1.5K"
+  String formatCompact() {
+    if (this < 1000) return toString();
+    if (this < 1000000) return '\${(this / 1000).toStringAsFixed(1)}K';
+    if (this < 1000000000) return '\${(this / 1000000).toStringAsFixed(1)}M';
+    if (this < 1000000000000) return '\${(this / 1000000000).toStringAsFixed(1)}B';
+    return '\${(this / 1000000000000).toStringAsFixed(1)}T';
+  }
+
+  /// Formats number as percentage
+  /// Example: 0.156.toPercentage() returns "15.6%"
+  String toPercentage([int decimals = 1]) {
+    return '\${(this * 100).toStringAsFixed(decimals)}%';
+  }
+}
+
+extension DateTimeExtension on DateTime {
+  /// Formats DateTime to ordinal date format
+  /// Example: DateTime.now().toOrdinalDate() returns "14th March, 2024"
+  String toOrdinalDate() {
+    final day = this.day;
+    final suffix = _getOrdinalSuffix(day);
+    return DateFormat("d'\$suffix' MMMM, y").format(this);
+  }
+
+  /// Formats DateTime according to specified format
+  /// Example: DateTime.now().format("MMMM d, y") returns "March 14, 2024"
+  String format(String format) {
+    return DateFormat(format).format(this);
+  }
+
+  /// Returns true if date is today
+  bool get isToday {
+    final now = DateTime.now();
+    return year == now.year && month == now.month && day == now.day;
+  }
+
+  /// Returns true if date is in the past
+  bool get isPast => isBefore(DateTime.now());
+
+  /// Returns true if date is in the future
+  bool get isFuture => isAfter(DateTime.now());
+
+  /// Returns true if date is within a weekend
+  bool get isWeekend => weekday == DateTime.saturday || weekday == DateTime.sunday;
+
+  /// Returns the date formatted as a relative time string
+  /// Example: "2 hours ago", "in 3 days", "just now"
+  String toRelative() {
+    final now = DateTime.now();
+    final difference = now.difference(this);
+
+    if (difference.inDays > 365) {
+      return format('MMMM d, y');
+    } else if (difference.inDays > 30) {
+      final months = (difference.inDays / 30).floor();
+      return difference.isNegative
+          ? 'in \$months \${months == 1 ? 'month' : 'months'}'
+          : '\$months \${months == 1 ? 'month' : 'months'} ago';
+    } else if (difference.inDays > 0) {
+      return difference.isNegative
+          ? 'in \${difference.inDays} \${difference.inDays == 1 ? 'day' : 'days'}'
+          : '\${difference.inDays} \${difference.inDays == 1 ? 'day' : 'days'} ago';
+    } else if (difference.inHours > 0) {
+      return difference.isNegative
+          ? 'in \${difference.inHours} \${difference.inHours == 1 ? 'hour' : 'hours'}'
+          : '\${difference.inHours} \${difference.inHours == 1 ? 'hour' : 'hours'} ago';
+    } else if (difference.inMinutes > 0) {
+      return difference.isNegative
+          ? 'in \${difference.inMinutes} \${difference.inMinutes == 1 ? 'minute' : 'minutes'}'
+          : '\${difference.inMinutes} \${difference.inMinutes == 1 ? 'minute' : 'minutes'} ago';
+    } else {
+      return 'just now';
+    }
+  }
+
+  /// Returns start of day (midnight)
+  DateTime get startOfDay => DateTime(year, month, day);
+
+  /// Returns end of day (23:59:59.999)
+  DateTime get endOfDay => DateTime(year, month, day, 23, 59, 59, 999);
+
+  /// Add or subtract business days (skipping weekends)
+  DateTime addBusinessDays(int days) {
+    DateTime date = this;
+    int remainingDays = days.abs();
+    final isAddition = days > 0;
+
+    while (remainingDays > 0) {
+      date = isAddition ? date.add(Duration(days: 1)) : date.subtract(Duration(days: 1));
+      if (!date.isWeekend) remainingDays--;
+    }
+    return date;
+  }
+
+   /// Formats time in 12-hour format without seconds
+  /// Example: DateTime.now().to12HourTime() returns "7:10 PM"
+  String to12HourTime() {
+    return DateFormat('h:mm a').format(this);
+  }
+
+  /// Formats time in 12-hour format with seconds
+  /// Example: DateTime.now().to12HourTimeWithSeconds() returns "7:10:00 PM"
+  String to12HourTimeWithSeconds() {
+    return DateFormat('h:mm:ss a').format(this);
+  }
+
+  /// Formats time in 24-hour format without seconds
+  /// Example: DateTime.now().to24HourTime() returns "19:10"
+  String to24HourTime() {
+    return DateFormat('HH:mm').format(this);
+  }
+
+  /// Formats time in 24-hour format with seconds
+  /// Example: DateTime.now().to24HourTimeWithSeconds() returns "19:10:00"
+  String to24HourTimeWithSeconds() {
+    return DateFormat('HH:mm:ss').format(this);
+  }
+
+   /// Returns whether the time is in the morning (12:00 AM to 11:59 AM)
+  bool get isMorning => hour >= 0 && hour < 12;
+
+  /// Returns whether the time is in the afternoon (12:00 PM to 5:59 PM)
+  bool get isAfternoon => hour >= 12 && hour < 18;
+
+  /// Returns whether the time is in the evening (6:00 PM to 11:59 PM)
+  bool get isEvening => hour >= 18;
+
+  /// Returns the time of day (morning, afternoon, or evening)
+  /// Returns greeting based on time of day
+  /// Example: DateTime.now().greeting() returns "Good morning/afternoon/evening"
+  String get timeOfDay {
+    if (isMorning) return 'morning';
+    if (isAfternoon) return 'afternoon';
+    return 'evening';
+  }
+}
+`;
+};
+const registerUtilsCommand = (context) => {
+    const workspaceFolder = (0, workspaceUtils_1.getWorkspaceFolder)();
+    let generateUtils = vscode.commands.registerCommand(constants_1.COMMANDS.FLUTTER_GENERATE_UTILS, async () => {
+        if (!workspaceFolder) {
+            vscode.window.showErrorMessage(constants_1.MESSAGES.NO_WORKSPACE);
+            return;
+        }
+        try {
+            // Find existing utils directory
+            const utilsDir = await findUtilsDirectory(workspaceFolder);
+            let targetDir;
+            if (!utilsDir) {
+                // Ask user where to create the utils directory
+                const selectedFolder = await vscode.window.showQuickPick([
+                    'lib/utils',
+                    'lib/util',
+                    'lib/src/utils',
+                    'lib/core/utils',
+                    'lib/common/utils',
+                    'lib/shared/utils',
+                    'Custom location...'
+                ], {
+                    placeHolder: 'Select where to create the utils directory'
+                });
+                if (!selectedFolder)
+                    return;
+                if (selectedFolder === 'Custom location...') {
+                    const customPath = await vscode.window.showInputBox({
+                        prompt: "Enter the path relative to the project root (e.g., lib/core/utils)",
+                        placeHolder: 'lib/your/path/here'
+                    });
+                    if (!customPath)
+                        return;
+                    targetDir = path.join(workspaceFolder, customPath);
+                }
+                else {
+                    targetDir = path.join(workspaceFolder, selectedFolder);
+                }
+                // Create directory recursively
+                await vscode.workspace.fs.createDirectory(vscode.Uri.file(targetDir));
+            }
+            else {
+                targetDir = utilsDir;
+            }
+            // Check if utils.dart already exists
+            const utilsFile = vscode.Uri.file(path.join(targetDir, 'utils.dart'));
+            try {
+                await vscode.workspace.fs.stat(utilsFile);
+                const overwrite = await vscode.window.showQuickPick(['Yes', 'No'], {
+                    placeHolder: 'utils.dart already exists. Do you want to overwrite it?'
+                });
+                if (overwrite !== 'Yes')
+                    return;
+            }
+            catch (error) {
+                // File doesn't exist, continue
+            }
+            // Generate and write the file
+            const fileContent = new TextEncoder().encode(generateUtilsContent());
+            await vscode.workspace.fs.writeFile(utilsFile, fileContent);
+            // Check if `intl` is in pubspec.yaml
+            const intlExists = await checkForIntlInPubspec(workspaceFolder);
+            if (!intlExists) {
+                // Execute the command to add intl package
+                const command = `flutter pub add intl`;
+                try {
+                    await (0, terminalUtils_1.runTerminalCommand)(command, workspaceFolder);
+                    vscode.window.showInformationMessage('Successfully added intl package to your pubspec.yaml.');
+                }
+                catch (error) {
+                    vscode.window.showErrorMessage(`Failed to add intl package: ${error.message}`);
+                }
+            }
+            else {
+                vscode.window.showInformationMessage('intl package is already added.');
+            }
+            // Open the generated file
+            const document = await vscode.workspace.openTextDocument(utilsFile);
+            await vscode.window.showTextDocument(document);
+            vscode.window.showInformationMessage(`Successfully generated utils.dart in ${utilsFile.fsPath}`);
+        }
+        catch (error) {
+            vscode.window.showErrorMessage(`Failed to generate utils: ${error.message}`);
+        }
+    });
+    context.subscriptions.push(generateUtils);
+};
+exports.registerUtilsCommand = registerUtilsCommand;
+
+
 /***/ })
 /******/ 	]);
 /************************************************************************/
@@ -1503,6 +2292,8 @@ const podCommands_1 = __webpack_require__(8);
 const flutterCommands_1 = __webpack_require__(10);
 const createCommands_1 = __webpack_require__(11);
 const emulatorCommands_1 = __webpack_require__(13);
+const complexCommands_1 = __webpack_require__(16);
+const utilCommands_1 = __webpack_require__(17);
 function activate(context) {
     (0, buildCommands_1.registerBuildCommands)(context);
     (0, doctorCommands_1.registerDoctorCommand)(context);
@@ -1511,6 +2302,8 @@ function activate(context) {
     (0, flutterCommands_1.registerFlutterCommands)(context);
     (0, createCommands_1.registerCreateCommands)(context);
     (0, emulatorCommands_1.registerDeviceManagementCommands)(context);
+    (0, complexCommands_1.registerComplexCommands)(context);
+    (0, utilCommands_1.registerUtilsCommand)(context);
 }
 function deactivate() { }
 

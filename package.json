@@ -29,111 +29,153 @@
     "commands": [
       {
         "command": "flutter-cli-shortcut.flutterPubGet",
-        "title": "Flux: Pub Get"
+        "title": "Flux: Pub Get",
+        "category": "Flutter"
       },
       {
         "command": "flutter-cli-shortcut.flutterPubUpgrade",
-        "title": "Flux: Pub Upgrade"
+        "title": "Flux: Pub Upgrade",
+        "category": "Flutter"
       },
       {
         "command": "flutter-cli-shortcut.flutterPubUpgradeMajorVersions",
-        "title": "Flux: Pub Upgrade Major Versions"
+        "title": "Flux: Pub Upgrade Major Versions",
+        "category": "Flutter"
       },
       {
         "command": "flutter-cli-shortcut.flutterPubOutdated",
-        "title": "Flux: Pub Outdated"
+        "title": "Flux: Pub Outdated",
+        "category": "Flutter"
       },
       {
         "command": "flutter-cli-shortcut.flutterPubCacheRepair",
-        "title": "Flux: Pub Cache Repair"
+        "title": "Flux: Pub Cache Repair",
+        "category": "Flutter"
       },
       {
         "command": "flutter-cli-shortcut.flutterPubUpgradeDryRun",
-        "title": "Flux: Pub Upgrade (Dry Run)"
+        "title": "Flux: Pub Upgrade (Dry Run)",
+        "category": "Flutter"
       },
       {
         "command": "flutter-cli-shortcut.flutterPubDowngrade",
-        "title": "Flux: Pub Downgrade"
+        "title": "Flux: Pub Downgrade",
+        "category": "Flutter"
       },
       {
         "command": "flutter-cli-shortcut.flutterPubVersion",
-        "title": "Flux: Pub Version"
+        "title": "Flux: Pub Version",
+        "category": "Flutter"
       },
       {
         "command": "flutter-cli-shortcut.flutterClean",
-        "title": "Flux: Clean"
+        "title": "Flux: Clean",
+        "category": "Flutter"
       },
       {
         "command": "flutter-cli-shortcut.flutterTest",
-        "title": "Flux: Test"
+        "title": "Flux: Test",
+        "category": "Flutter"
       },
       {
         "command": "flutter-cli-shortcut.flutterAnalyze",
-        "title": "Flux: Analyze"
+        "title": "Flux: Analyze",
+        "category": "Flutter"
       },
       {
         "command": "flutter-cli-shortcut.detailedFlutterDoctor",
-        "title": "Flux: Detailed Doctor"
+        "title": "Flux: Detailed Doctor",
+        "category": "Flutter"
       },
       {
         "command": "flutter-cli-shortcut.flutterCreate",
-        "title": "Flux: Create Project"
+        "title": "Flux: Create Project",
+        "category": "Flutter"
       },
       {
         "command": "flutter-cli-shortcut.flutterCreateCodeLytical",
-        "title": "Flux: Create CodeLytical Structure"
+        "title": "Flux: Create CodeLytical Structure",
+        "category": "Flutter"
       },
       {
         "command": "flutter-cli-shortcut.flutterCreateCodeLyticalRiverpod",
-        "title": "Flux: Create CodeLytical Riverpod"
+        "title": "Flux: Create CodeLytical Riverpod",
+        "category": "Flutter"
       },
       {
         "command": "flutter-cli-shortcut.flutterBuildApk",
-        "title": "Flux: Build APK"
+        "title": "Flux: Build APK",
+        "category": "Flutter"
       },
       {
         "command": "flutter-cli-shortcut.flutterBuildIos",
-        "title": "Flux: Build iOS"
+        "title": "Flux: Build iOS",
+        "category": "Flutter"
       },
       {
         "command": "flutter-cli-shortcut.flutterBuildAppBundle",
-        "title": "Flux: Build App Bundle"
+        "title": "Flux: Build App Bundle",
+        "category": "Flutter"
       },
       {
         "command": "flutter-cli-shortcut.flutterBuildWithOptions",
-        "title": "Flux: Build for Selected Platforms"
+        "title": "Flux: Build for Platforms",
+        "category": "Flutter"
       },
       {
         "command": "flutter-cli-shortcut.podInstall",
-        "title": "Flux: Pod Install"
+        "title": "Flux: Pod Install",
+        "category": "Flutter"
       },
       {
         "command": "flutter-cli-shortcut.podInstallWithRepoUpdate",
-        "title": "Flux: Pod Install with Repo Update"
+        "title": "Flux: Pod Install with Repo Update",
+        "category": "Flutter"
       },
       {
         "command": "flutter-cli-shortcut.podUpdate",
-        "title": "Flux: Pod Update"
+        "title": "Flux: Pod Update",
+        "category": "Flutter"
       },
       {
         "command": "flutter-cli-shortcut.podRepoUpdate",
-        "title": "Flux: Pod Repo Update"
+        "title": "Flux: Pod Repo Update",
+        "category": "Flutter"
       },
       {
         "command": "flutter-cli-shortcut.flutterPubAdd",
-        "title": "Flux: Pub Add Package"
+        "title": "Flux: Pub Add Package",
+        "category": "Flutter"
       },
       {
         "command": "flutter-cli-shortcut.flutterPubRemove",
-        "title": "Flux: Pub Remove Package"
+        "title": "Flux: Pub Remove Package",
+        "category": "Flutter"
       },
       {
         "command": "flutter-cli-shortcut.startEmulator",
-        "title": "Flux: Start Emulator"
+        "title": "Flux: Start Emulator",
+        "category": "Flutter"
       },
       {
         "command": "flutter-cli-shortcut.listDevices",
-        "title": "Flux: List Devices"
+        "title": "Flux: List Devices",
+        "category": "Flutter"
+      },
+      {
+        "command": "flutter-cli-shortcut.generateJsonModel",
+        "title": "Flux: Generate JSON Model",
+        "category": "Flutter"
+      },
+      {
+        "command": "flutter-cli-shortcut.cleanRebuild",
+        "title": "Flux: Clean and Rebuild",
+        "category": "Flutter"
+      },
+      {
+        "command": "flutter-cli-shortcut.generateUtils",
+        "title": "Flux: Generate Utils",
+        "category": "Flutter"
       }
     ]
   },

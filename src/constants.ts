@@ -30,6 +30,10 @@ export const COMMANDS = {
     FLUTTER_ANALYZE: "flutter-cli-shortcut.flutterAnalyze",
 
     MANAGE_EMULATORS: "flutter-cli-shortcut.manageEmulators",
+    FLUTTER_GENERATE_JSON_MODEL: "flutter-cli-shortcut.generateJsonModel",
+    FLUTTER_CLEAN_REBUILD: "flutter-cli-shortcut.cleanRebuild",
+
+    FLUTTER_GENERATE_UTILS: "flutter-cli-shortcut.generateUtils"
 };
 
 export const MESSAGES = {

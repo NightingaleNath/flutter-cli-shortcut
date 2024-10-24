@@ -6,6 +6,8 @@ import { registerPodCommands } from "./commands/podCommands";
 import { registerFlutterCommands } from "./commands/flutterCommands";
 import { registerCreateCommands } from "./commands/createCommands";
 import { registerDeviceManagementCommands } from "./commands/emulatorCommands";
+import { registerComplexCommands } from "./commands/complexCommands";
+import { registerUtilsCommand } from "./commands/utilCommands";
 
 export function activate(context: vscode.ExtensionContext) {
   registerBuildCommands(context);
@@ -15,6 +17,8 @@ export function activate(context: vscode.ExtensionContext) {
   registerFlutterCommands(context);
   registerCreateCommands(context);
   registerDeviceManagementCommands(context);
+  registerComplexCommands(context);
+  registerUtilsCommand(context);
 }
 
 export function deactivate() { }

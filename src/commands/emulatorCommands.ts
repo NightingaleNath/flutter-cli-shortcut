@@ -2,7 +2,6 @@ import * as vscode from "vscode";
 import { getWorkspaceFolder } from "../utils/workspaceUtils";
 import { exec } from "child_process";
 import { promisify } from "util";
-import * as os from "os";
 
 const execAsync = promisify(exec);
 
