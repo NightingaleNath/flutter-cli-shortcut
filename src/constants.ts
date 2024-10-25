@@ -33,7 +33,8 @@ export const COMMANDS = {
     FLUTTER_GENERATE_JSON_MODEL: "flutter-cli-shortcut.generateJsonModel",
     FLUTTER_CLEAN_REBUILD: "flutter-cli-shortcut.cleanRebuild",
 
-    FLUTTER_GENERATE_UTILS: "flutter-cli-shortcut.generateUtils"
+    FLUTTER_GENERATE_UTILS: "flutter-cli-shortcut.generateUtils",
+    FLUTTER_SET_UP: 'flutter-cli-shortcut.setupStateManagement',
 };
 
 export const MESSAGES = {

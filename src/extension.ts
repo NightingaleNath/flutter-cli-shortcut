@@ -8,6 +8,7 @@ import { registerCreateCommands } from "./commands/createCommands";
 import { registerDeviceManagementCommands } from "./commands/emulatorCommands";
 import { registerComplexCommands } from "./commands/complexCommands";
 import { registerUtilsCommand } from "./commands/utilCommands";
+import { registerSetupCommands } from "./commands/stateManagementCommand";
 
 export function activate(context: vscode.ExtensionContext) {
   registerBuildCommands(context);
@@ -19,6 +20,7 @@ export function activate(context: vscode.ExtensionContext) {
   registerDeviceManagementCommands(context);
   registerComplexCommands(context);
   registerUtilsCommand(context);
+  registerSetupCommands(context);
 }
 
 export function deactivate() { }

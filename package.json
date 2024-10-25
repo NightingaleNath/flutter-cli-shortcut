@@ -176,6 +176,11 @@
         "command": "flutter-cli-shortcut.generateUtils",
         "title": "Flux: Generate Utils",
         "category": "Flutter"
+      },
+      {
+        "command": "flutter-cli-shortcut.setupStateManagement",
+        "title": "Flux: Setup State Management",
+        "category": "Flutter"
       }
     ]
   },

@@ -167,7 +167,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.runTerminalCommand = exports.runTerminalCommandWithOutput = void 0;
+exports.runTerminalCommandWithTimeout = exports.runTerminalCommand = exports.runTerminalCommandWithOutput = void 0;
 const vscode = __importStar(__webpack_require__(2));
 const runTerminalCommandWithOutput = async (command, cwd) => {
     const outputChannel = vscode.window.createOutputChannel("Flutter Doctor Output");
@@ -227,6 +227,7 @@ const runTerminalCommandWithTimeout = (command, cwd) => {
         terminal.sendText("exit");
     });
 };
+exports.runTerminalCommandWithTimeout = runTerminalCommandWithTimeout;
 
 
 /***/ }),
@@ -308,7 +309,8 @@ exports.COMMANDS = {
     MANAGE_EMULATORS: "flutter-cli-shortcut.manageEmulators",
     FLUTTER_GENERATE_JSON_MODEL: "flutter-cli-shortcut.generateJsonModel",
     FLUTTER_CLEAN_REBUILD: "flutter-cli-shortcut.cleanRebuild",
-    FLUTTER_GENERATE_UTILS: "flutter-cli-shortcut.generateUtils"
+    FLUTTER_GENERATE_UTILS: "flutter-cli-shortcut.generateUtils",
+    FLUTTER_SET_UP: 'flutter-cli-shortcut.setupStateManagement',
 };
 exports.MESSAGES = {
     NO_WORKSPACE: "No workspace folder found. Please open a Flutter project folder.",
@@ -995,7 +997,7 @@ const registerCreateCommands = (context) => {
         }
         // Create the Flutter project
         try {
-            await runTerminalCommandWithTimeout(`flutter create --org ${organization} ${projectName}`, workspaceFolder);
+            await (0, terminalUtils_1.runTerminalCommandWithTimeout)(`flutter create --org ${organization} ${projectName}`, workspaceFolder);
             // Define the project structure
             const projectPath = path.join(workspaceFolder, projectName);
             const folders = [
@@ -1021,7 +1023,7 @@ const registerCreateCommands = (context) => {
             // Create additional files
             await createProjectFiles(projectPath, projectName);
             // Add provider dependency using flutter pub add
-            await runTerminalCommandWithTimeout(`flutter pub add provider`, projectPath);
+            await (0, terminalUtils_1.runTerminalCommandWithTimeout)(`flutter pub add provider`, projectPath);
             // Remove the default test file
             const defaultTestFile = path.join(projectPath, "test", "widget_test.dart");
             if (fs.existsSync(defaultTestFile)) {
@@ -1059,7 +1061,7 @@ const registerCreateCommands = (context) => {
         }
         // Create the Flutter project
         try {
-            await runTerminalCommandWithTimeout(`flutter create --org ${organization} ${projectName}`, workspaceFolder);
+            await (0, terminalUtils_1.runTerminalCommandWithTimeout)(`flutter create --org ${organization} ${projectName}`, workspaceFolder);
             // Define the project structure
             const projectPath = path.join(workspaceFolder, projectName);
             const folders = [
@@ -1084,7 +1086,7 @@ const registerCreateCommands = (context) => {
             // Create additional files
             await createRiverPodProjectFiles(projectPath, projectName);
             // Add riverpod and go_router dependencies using flutter pub add
-            await runTerminalCommandWithTimeout(`flutter pub add flutter_riverpod go_router`, projectPath);
+            await (0, terminalUtils_1.runTerminalCommandWithTimeout)(`flutter pub add flutter_riverpod go_router`, projectPath);
             // Remove the default test file
             const defaultTestFile = path.join(projectPath, "test", "widget_test.dart");
             if (fs.existsSync(defaultTestFile)) {
@@ -1208,9 +1210,6 @@ const registerCreateCommands = (context) => {
     context.subscriptions.push(flutterCreate, flutterCreateCodeLytical, flutterCreateCodeLyticalRiverpod);
 };
 exports.registerCreateCommands = registerCreateCommands;
-function runTerminalCommandWithTimeout(arg0, workspaceFolder) {
-    throw new Error("Function not implemented.");
-}
 
 
 /***/ }),
@@ -2249,6 +2248,110 @@ const registerUtilsCommand = (context) => {
 exports.registerUtilsCommand = registerUtilsCommand;
 
 
+/***/ }),
+/* 18 */
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.registerSetupCommands = void 0;
+const vscode = __importStar(__webpack_require__(2));
+const path = __importStar(__webpack_require__(9));
+const fs = __importStar(__webpack_require__(12));
+const terminalUtils_1 = __webpack_require__(3);
+const workspaceUtils_1 = __webpack_require__(4);
+const constants_1 = __webpack_require__(5);
+const registerSetupCommands = (context) => {
+    const workspaceFolder = (0, workspaceUtils_1.getWorkspaceFolder)();
+    let flutterSetupCodeLytical = vscode.commands.registerCommand(constants_1.COMMANDS.FLUTTER_SET_UP, async () => {
+        if (!workspaceFolder) {
+            vscode.window.showErrorMessage(constants_1.MESSAGES.NO_WORKSPACE);
+            return;
+        }
+        // Check if there's an existing Flutter project
+        if (!fs.existsSync(path.join(workspaceFolder, "pubspec.yaml"))) {
+            vscode.window.showErrorMessage("No Flutter project found in the workspace.");
+            return;
+        }
+        // Prompt for State Management choice
+        const stateManagement = await vscode.window.showQuickPick(["provider", "riverpod"], {
+            placeHolder: "Select State Management Library",
+        });
+        if (!stateManagement) {
+            vscode.window.showErrorMessage("State management selection is required.");
+            return;
+        }
+        // Define project paths
+        const libPath = path.join(workspaceFolder, "lib");
+        const folders = stateManagement === "provider"
+            ? ["app/routes", "app/theme", "mixins", "services/local", "services/network", "utils", "controllers/sample", "models", "ui/screens", "ui/widgets"]
+            : ["core", "core/router", "core/theme", "features/home", "features/home/view", "features/home/viewmodel", "features/home/model", "services/local", "services/network"];
+        // Create folder structure
+        folders.forEach(folder => fs.mkdirSync(path.join(libPath, folder), { recursive: true }));
+        // Populate main.dart file based on selected state management
+        const mainFile = path.join(libPath, "main.dart");
+        const mainContent = stateManagement === "provider"
+            ? `import 'app/launcher.dart' as launcher;\n\nvoid main() {\n  launcher.main();\n}\n`
+            : `import 'package:flutter/material.dart';\nimport 'package:flutter_riverpod/flutter_riverpod.dart';\nimport 'core/router/app_router.dart';\n\nvoid main() {\n  runApp(const ProviderScope(child: MyApp()));\n}\n\nclass MyApp extends StatelessWidget {\n  const MyApp({super.key});\n\n @override\n  Widget build(BuildContext context) {\n    return MaterialApp.router(\n      title: 'Flutter Demo',\n      theme: ThemeData(\n        primarySwatch: Colors.blue,\n      ),\n      routerConfig: AppRouter.router,\n    );\n  }\n}\n`;
+        fs.writeFileSync(mainFile, mainContent);
+        // Add dependencies and create additional files
+        try {
+            if (stateManagement === "provider") {
+                await (0, terminalUtils_1.runTerminalCommandWithTimeout)(`flutter pub add provider`, workspaceFolder);
+                await createProviderFiles(workspaceFolder);
+            }
+            else {
+                await (0, terminalUtils_1.runTerminalCommandWithTimeout)(`flutter pub add flutter_riverpod go_router`, workspaceFolder);
+                await createRiverpodFiles(workspaceFolder);
+            }
+            vscode.window.showInformationMessage(`${stateManagement} setup completed successfully.`);
+        }
+        catch (error) {
+            vscode.window.showErrorMessage(`Failed to setup ${stateManagement}: ${error.message}`);
+        }
+    });
+    // Function to create additional provider-specific files
+    const createProviderFiles = async (projectPath) => {
+        const providerRegistryPath = path.join(projectPath, "lib", "app", "provider_registry.dart");
+        fs.writeFileSync(providerRegistryPath, `import 'package:provider/provider.dart';\nimport 'package:provider/single_child_widget.dart';\nimport 'provider_registry_export.dart';\n\nclass ProviderRegistry {\n  static List<SingleChildWidget> get registeredProviders => [\n    ChangeNotifierProvider(create: (_) => SampleController()),\n  ];\n}\n`);
+        const sampleControllerPath = path.join(projectPath, "lib", "controllers", "sample", "sample_controller.dart");
+        fs.writeFileSync(sampleControllerPath, `import 'package:flutter/material.dart';\n\nclass SampleController extends ChangeNotifier {\n  String _message = 'CodeLytical Provider State';\n  String get message => _message;\n\n  void updateMessage(String newMessage) {\n    _message = newMessage;\n    notifyListeners();\n  }\n}\n`);
+    };
+    // Function to create additional Riverpod-specific files
+    const createRiverpodFiles = async (projectPath) => {
+        const appRouterPath = path.join(projectPath, "lib", "core", "router", "app_router.dart");
+        fs.writeFileSync(appRouterPath, `import 'package:go_router/go_router.dart';\nimport '../../features/home/view/home_view.dart';\n\nclass AppRouter {\n  static final router = GoRouter(\n    routes: [\n      GoRoute(\n        path: '/',\n        builder: (context, state) => const HomeView(),\n      ),\n    ],\n  );\n}\n`);
+        const homeViewModelPath = path.join(projectPath, "lib", "features", "home", "viewmodel", "home_viewmodel.dart");
+        fs.writeFileSync(homeViewModelPath, `import 'package:flutter/material.dart';\nimport 'package:flutter_riverpod/flutter_riverpod.dart';\n\nclass HomeViewModel extends ChangeNotifier {\n  String _message = 'Hello from Riverpod!';\n  String get message => _message;\n\n  void updateMessage(String newMessage) {\n    _message = newMessage;\n    notifyListeners();\n  }\n}\n\nfinal homeViewModelProvider = ChangeNotifierProvider((ref) => HomeViewModel());\n`);
+    };
+    context.subscriptions.push(flutterSetupCodeLytical);
+};
+exports.registerSetupCommands = registerSetupCommands;
+
+
 /***/ })
 /******/ 	]);
 /************************************************************************/
@@ -2294,6 +2397,7 @@ const createCommands_1 = __webpack_require__(11);
 const emulatorCommands_1 = __webpack_require__(13);
 const complexCommands_1 = __webpack_require__(16);
 const utilCommands_1 = __webpack_require__(17);
+const stateManagementCommand_1 = __webpack_require__(18);
 function activate(context) {
     (0, buildCommands_1.registerBuildCommands)(context);
     (0, doctorCommands_1.registerDoctorCommand)(context);
@@ -2304,6 +2408,7 @@ function activate(context) {
     (0, emulatorCommands_1.registerDeviceManagementCommands)(context);
     (0, complexCommands_1.registerComplexCommands)(context);
     (0, utilCommands_1.registerUtilsCommand)(context);
+    (0, stateManagementCommand_1.registerSetupCommands)(context);
 }
 function deactivate() { }
 

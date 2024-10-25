@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import * as path from "path";
 import * as fs from "fs";
-import { runTerminalCommand } from "../utils/terminalUtils";
+import { runTerminalCommand, runTerminalCommandWithTimeout } from "../utils/terminalUtils";
 import { getWorkspaceFolder } from "../utils/workspaceUtils";
 import { COMMANDS, MESSAGES } from "../constants";
 
@@ -34,7 +34,7 @@ export const registerCreateCommands = (context: vscode.ExtensionContext) => {
 
             if (!workspaceFolder) {
                 vscode.window.showErrorMessage(
-                   MESSAGES.NO_WORKSPACE
+                    MESSAGES.NO_WORKSPACE
                 );
                 return;
             }
@@ -81,7 +81,7 @@ export const registerCreateCommands = (context: vscode.ExtensionContext) => {
 
             if (!workspaceFolder) {
                 vscode.window.showErrorMessage(
-                   MESSAGES.NO_WORKSPACE
+                    MESSAGES.NO_WORKSPACE
                 );
                 return;
             }
@@ -137,7 +137,7 @@ export const registerCreateCommands = (context: vscode.ExtensionContext) => {
                     "widget_test.dart"
                 );
                 if (fs.existsSync(defaultTestFile)) {
-                    fs.unlinkSync(defaultTestFile); 
+                    fs.unlinkSync(defaultTestFile);
                 }
 
                 // Add custom test for SampleController
@@ -158,7 +158,6 @@ export const registerCreateCommands = (context: vscode.ExtensionContext) => {
             }
         }
     );
-
 
     let flutterCreateCodeLyticalRiverpod = vscode.commands.registerCommand(
         COMMANDS.FLUTTER_CREATE_CODELYTICAL_RIVERPOD,
@@ -186,7 +185,7 @@ export const registerCreateCommands = (context: vscode.ExtensionContext) => {
 
             if (!workspaceFolder) {
                 vscode.window.showErrorMessage(
-                   MESSAGES.NO_WORKSPACE
+                    MESSAGES.NO_WORKSPACE
                 );
                 return;
             }
@@ -485,7 +484,4 @@ export const registerCreateCommands = (context: vscode.ExtensionContext) => {
         flutterCreateCodeLytical,
         flutterCreateCodeLyticalRiverpod);
 };
-function runTerminalCommandWithTimeout(arg0: string, workspaceFolder: string) {
-    throw new Error("Function not implemented.");
-}
 

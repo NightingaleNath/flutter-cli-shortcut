@@ -43,7 +43,7 @@ export const runTerminalCommand = async (command: string, cwd: string) => {
 };
 
 // Helper function to run runTerminalCommandWithTimeout
-const runTerminalCommandWithTimeout = (command: string, cwd: string) => {
+export const runTerminalCommandWithTimeout = (command: string, cwd: string) => {
     return new Promise<void>((resolve, reject) => {
         const terminal = vscode.window.createTerminal({
             name: `Flutter: ${command}`,
